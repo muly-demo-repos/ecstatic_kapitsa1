@@ -1,5 +1,5 @@
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DB_URL")
 }
 
@@ -10,7 +10,7 @@ generator client {
 model User {
   createdAt DateTime @default(now())
   firstName String?
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   lastName  String?
   password  String
   roles     Json
@@ -20,7 +20,7 @@ model User {
 
 model Batch {
   asset             Asset           @relation(fields: [assetId], references: [id])
-  assetId           String
+  assetId           String          @db.ObjectId
   batchActualQty    Float
   batchClass        String
   batchClassId      String
@@ -28,19 +28,19 @@ model Batch {
   batchId           String
   batchPlannedQty   Float
   batchUnits        String
-  id                String          @id @default(auto())
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
   item              Item            @relation(fields: [itemId], references: [id])
-  itemId            String
+  itemId            String          @db.ObjectId
   productionOrder   ProductionOrder @relation(fields: [productionOrderId], references: [id])
-  productionOrderId String
+  productionOrderId String          @db.ObjectId
   route             Route           @relation(fields: [routeId], references: [id])
-  routeId           String
+  routeId           String          @db.ObjectId
   status            EnumBatchStatus
 }
 
 model Route {
   batches            Batch[]
-  id                 String            @id @default(auto())
+  id                 String            @id @default(auto()) @map("_id") @db.ObjectId
   productionOrder    ProductionOrder[]
   routeName          String
   routeOperation     String
@@ -53,9 +53,9 @@ model Asset {
   assetName        String
   batches          Batch[]
   children         Asset[]       @relation(name: "children")
-  id               String        @id @default(auto())
-  parent           Asset?        @relation(name: "children", fields: [parentId], references: [id])
-  parentId         String?
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  parent           Asset?        @relation(name: "children", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parentId         String?       @db.ObjectId
   type             EnumAssetType
 }
 
@@ -68,16 +68,16 @@ model ProductionOrder {
   editedBy      String
   endDate       DateTime      @map("endDate")
   firmed        Boolean
-  id            String        @id @default(auto())
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
   released      Boolean
   route         Route         @relation(fields: [routeRouteId], references: [id])
-  routeRouteId  String
+  routeRouteId  String        @db.ObjectId
   routeRecipes  RouteRecipe[]
   schemaVersion String
   startDate     DateTime      @map("startDate")
   state         String
   wipItem       Item          @relation(fields: [itemId], references: [id])
-  itemId        String
+  itemId        String        @db.ObjectId
 }
 
 model Item {
@@ -92,23 +92,23 @@ model Item {
   createdBy             String
   editedAt              DateTime
   editedBy              String
-  id                    String            @id @default(auto())
+  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
   productionOrderId     String?           @db.ObjectId
   productionOrders      ProductionOrder[]
   schemaVersion         String
 }
 
 model Operation {
-  id            String @id @default(auto())
+  id            String @id @default(auto()) @map("_id") @db.ObjectId
   operationName String
 }
 
 model RouteRecipe {
-  id                String           @id @default(auto())
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
   operationStepId   String           @db.ObjectId
   operationStepName String
   productionOrder   ProductionOrder? @relation(fields: [productionOrderId], references: [id])
-  productionOrderId String?
+  productionOrderId String?          @db.ObjectId
 }
 
 enum EnumBatchStatus {
