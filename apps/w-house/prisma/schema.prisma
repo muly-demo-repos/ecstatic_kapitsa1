@@ -17,3 +17,113 @@ model User {
   updatedAt DateTime @updatedAt
   username  String   @unique
 }
+
+model Batch {
+  asset             Asset           @relation(fields: [assetId], references: [id])
+  assetId           String
+  batchActualQty    Float
+  batchClass        String
+  batchClassId      String
+  batchClassName    String
+  batchId           String
+  batchPlannedQty   Float
+  batchUnits        String
+  id                String          @id @default(auto())
+  item              Item            @relation(fields: [itemId], references: [id])
+  itemId            String
+  productionOrder   ProductionOrder @relation(fields: [productionOrderId], references: [id])
+  productionOrderId String
+  route             Route           @relation(fields: [routeId], references: [id])
+  routeId           String
+  status            EnumBatchStatus
+}
+
+model Route {
+  batches            Batch[]
+  id                 String            @id @default(auto())
+  productionOrder    ProductionOrder[]
+  routeName          String
+  routeOperation     String
+  routeOperationStep String
+  routeRevision      String
+}
+
+model Asset {
+  assetDescription String
+  assetName        String
+  batches          Batch[]
+  children         Asset[]       @relation(name: "children")
+  id               String        @id @default(auto())
+  parent           Asset?        @relation(name: "children", fields: [parentId], references: [id])
+  parentId         String?
+  type             EnumAssetType
+}
+
+model ProductionOrder {
+  batches       Batch[]
+  className     String
+  createdAt     DateTime
+  createdBy     String
+  editedAt      DateTime
+  editedBy      String
+  endDate       DateTime      @map("endDate")
+  firmed        Boolean
+  id            String        @id @default(auto())
+  released      Boolean
+  route         Route         @relation(fields: [routeRouteId], references: [id])
+  routeRouteId  String
+  routeRecipes  RouteRecipe[]
+  schemaVersion String
+  startDate     DateTime      @map("startDate")
+  state         String
+  wipItem       Item          @relation(fields: [itemId], references: [id])
+  itemId        String
+}
+
+model Item {
+  batchClassActive      Boolean
+  batchClassDescription String
+  batchClassId          String
+  batchClassName        String
+  batchClassRevision    String
+  batches               Batch[]
+  className             String
+  createdAt             DateTime
+  createdBy             String
+  editedAt              DateTime
+  editedBy              String
+  id                    String            @id @default(auto())
+  productionOrderId     String?           @db.ObjectId
+  productionOrders      ProductionOrder[]
+  schemaVersion         String
+}
+
+model Operation {
+  id            String @id @default(auto())
+  operationName String
+}
+
+model RouteRecipe {
+  id                String           @id @default(auto())
+  operationStepId   String           @db.ObjectId
+  operationStepName String
+  productionOrder   ProductionOrder? @relation(fields: [productionOrderId], references: [id])
+  productionOrderId String?
+}
+
+enum EnumBatchStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+enum EnumAssetType {
+  ENT
+  SITE
+  AREA
+  LINE
+  CELL
+  EQUIPMOD
+  EQUIPPHASE
+  CONTROLMOD
+}
